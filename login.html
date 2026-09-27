@@ -47,6 +47,12 @@
     font-weight: 600; cursor: pointer;
   }
   .btn:hover { background: var(--brand-dark); }
+  .btn-ghost {
+    width: 100%; margin-top: 10px; background: none; color: var(--brand);
+    border: 1px solid var(--brand); border-radius: 8px; padding: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .btn-ghost:hover { background: var(--brand); color: #fff; }
   .error { color: var(--danger); font-size: 13px; margin-top: 10px; min-height: 18px; text-align: center; }
   .hint { margin-top: 16px; font-size: 12px; color: var(--muted); text-align: center; }
   footer { text-align: center; color: var(--muted); font-size: 12px; padding: 20px; }
@@ -65,6 +71,7 @@
     <input type="text" id="nick" placeholder="例如：范姐" autocomplete="off" autofocus>
 
     <button class="btn" type="submit">登录</button>
+    <button class="btn-ghost" type="button" id="quickBtn">一键体验（不用输入）</button>
     <p class="error" id="err"></p>
     <p class="hint">登录状态保存在本浏览器，点「退出」即清除</p>
   </form>
@@ -85,6 +92,18 @@
     localStorage.setItem('workbench_user', nick);
     window.location.href = 'dashboard.html';
   });
+
+  // 一键体验：默认昵称直接登录
+  function quickLogin() {
+    localStorage.setItem('workbench_user', '访客');
+    window.location.href = 'dashboard.html';
+  }
+  document.getElementById('quickBtn').addEventListener('click', quickLogin);
+
+  // 演示链接 login.html?demo=1：供演示/截图自动登录
+  if (new URLSearchParams(location.search).get('demo')) {
+    quickLogin();
+  }
 
   // 已登录的人再进登录页，直接送去功能页
   if (localStorage.getItem('workbench_user')) {
