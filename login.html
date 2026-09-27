@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 · 范姐的个人工作台</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e;
+    --muted: #898781; --border: rgba(11,11,11,0.10);
+    --brand: #2a78d6; --brand-dark: #1c5cab; --danger: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+      --muted: #898781; --border: rgba(255,255,255,0.10);
+      --brand: #3987e5; --brand-dark: #5598e7; --danger: #e66767;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--page); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; display: flex; flex-direction: column;
+  }
+  .top { padding: 18px 20px; }
+  .top a { color: var(--brand); text-decoration: none; font-size: 14px; }
+  .center { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 20px; }
+  .box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 32px 30px; width: 100%; max-width: 360px;
+  }
+  .box h1 { font-size: 20px; text-align: center; }
+  .box .sub { font-size: 13px; color: var(--ink-2); text-align: center; margin: 6px 0 22px; }
+  label { font-size: 13px; color: var(--ink-2); display: block; margin-bottom: 6px; }
+  input {
+    width: 100%; padding: 10px 12px; font-size: 15px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--ink);
+  }
+  input:focus { outline: 2px solid var(--brand); outline-offset: -1px; }
+  .btn {
+    width: 100%; margin-top: 16px; background: var(--brand); color: #fff;
+    border: none; border-radius: 8px; padding: 11px; font-size: 15px;
+    font-weight: 600; cursor: pointer;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .error { color: var(--danger); font-size: 13px; margin-top: 10px; min-height: 18px; text-align: center; }
+  .hint { margin-top: 16px; font-size: 12px; color: var(--muted); text-align: center; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 20px; }
+</style>
+</head>
+<body>
+
+<div class="top"><a href="index.html">← 返回首页</a></div>
+
+<div class="center">
+  <form class="box" id="loginForm">
+    <h1>🔐 登录工作台</h1>
+    <p class="sub">练习作品：输入任意昵称即可登录</p>
+
+    <label for="nick">你的昵称</label>
+    <input type="text" id="nick" placeholder="例如：范姐" autocomplete="off" autofocus>
+
+    <button class="btn" type="submit">登录</button>
+    <p class="error" id="err"></p>
+    <p class="hint">登录状态保存在本浏览器，点「退出」即清除</p>
+  </form>
+</div>
+
+<footer>2026-09-27 · 网站制作课程作业</footer>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var nick = document.getElementById('nick').value.trim();
+    var err = document.getElementById('err');
+    if (!nick) {
+      err.textContent = '请先输入昵称';
+      return;
+    }
+    // 写入登录态（localStorage），随后跳转功能页
+    localStorage.setItem('workbench_user', nick);
+    window.location.href = 'dashboard.html';
+  });
+
+  // 已登录的人再进登录页，直接送去功能页
+  if (localStorage.getItem('workbench_user')) {
+    window.location.href = 'dashboard.html';
+  }
+</script>
+</body>
+</html>

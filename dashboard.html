@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作台 · 范姐的个人工作台</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e;
+    --muted: #898781; --grid: #e1e0d9; --border: rgba(11,11,11,0.10);
+    --brand: #2a78d6; --brand-dark: #1c5cab;
+    --series-1: #2a78d6; --up: #006300; --down: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+      --muted: #898781; --grid: #2c2c2a; --border: rgba(255,255,255,0.10);
+      --brand: #3987e5; --brand-dark: #5598e7;
+      --series-1: #3987e5; --up: #0ca30c; --down: #e66767;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--page); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    line-height: 1.5; padding-bottom: 40px;
+  }
+  .nav {
+    max-width: 900px; margin: 0 auto; padding: 16px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .nav .logo { font-weight: 700; font-size: 15px; }
+  .nav .right { display: flex; align-items: center; gap: 14px; font-size: 14px; }
+  .nav .hello { color: var(--ink-2); }
+  .nav button {
+    background: none; border: 1px solid var(--border); color: var(--ink-2);
+    border-radius: 8px; padding: 5px 12px; font-size: 13px; cursor: pointer;
+  }
+  .nav button:hover { border-color: var(--brand); color: var(--brand); }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 10px 20px 0; }
+  h2.section { font-size: 15px; color: var(--ink-2); margin: 20px 0 10px; font-weight: 600; }
+
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px;
+  }
+  .kpi .label { font-size: 13px; color: var(--ink-2); }
+  .kpi .value { font-size: 28px; font-weight: 700; margin-top: 6px; }
+  .kpi .delta { font-size: 13px; margin-top: 4px; }
+  .kpi .delta.up { color: var(--up); }
+  .kpi .delta.down { color: var(--down); }
+
+  .chart-card { padding: 20px 22px 12px; margin-top: 12px; }
+  .chart-card h3 { font-size: 16px; font-weight: 600; }
+  .chart-card .note { font-size: 12px; color: var(--muted); margin: 2px 0 8px; }
+  svg { width: 100%; height: auto; display: block; }
+  .gridline { stroke: var(--grid); stroke-width: 1; }
+  .axis-label { fill: var(--muted); font-size: 12px; }
+  .bar { fill: var(--series-1); }
+  .bar-hit { fill: transparent; cursor: pointer; }
+  .bar-hit:hover + .bar { opacity: 0.85; }
+  .tip { opacity: 0; pointer-events: none; transition: opacity .1s; }
+  .tip rect { fill: var(--ink); }
+  .tip text { fill: var(--surface); font-size: 12px; }
+  .bar-group:hover .tip { opacity: 1; }
+  .direct-label { fill: var(--ink-2); font-size: 12px; }
+
+  /* 备忘小工具 */
+  .memo { margin-top: 12px; padding: 20px 22px; }
+  .memo h3 { font-size: 16px; font-weight: 600; }
+  .memo .sub { font-size: 12px; color: var(--muted); margin: 2px 0 14px; }
+  .add-row { display: flex; gap: 8px; }
+  .add-row input {
+    flex: 1; padding: 9px 12px; font-size: 14px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--ink);
+  }
+  .add-row input:focus { outline: 2px solid var(--brand); outline-offset: -1px; }
+  .add-row button {
+    background: var(--brand); color: #fff; border: none; border-radius: 8px;
+    padding: 0 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .add-row button:hover { background: var(--brand-dark); }
+  ul.todos { list-style: none; margin-top: 14px; }
+  ul.todos li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 4px; border-bottom: 1px solid var(--border); font-size: 14px;
+  }
+  ul.todos li:last-child { border-bottom: none; }
+  ul.todos li.done .text { text-decoration: line-through; color: var(--muted); }
+  ul.todos .text { flex: 1; cursor: pointer; }
+  ul.todos .del {
+    background: none; border: none; color: var(--muted);
+    font-size: 16px; cursor: pointer; padding: 0 4px;
+  }
+  ul.todos .del:hover { color: var(--down); }
+  .empty { font-size: 13px; color: var(--muted); margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo">🧭 范姐的个人工作台</div>
+  <div class="right">
+    <span class="hello">你好，<b id="who"></b></span>
+    <button id="logout">退出登录</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <h2 class="section">📊 数据看板</h2>
+  <section class="kpis">
+    <div class="card kpi">
+      <div class="label">本周访客</div><div class="value">1,284</div><div class="delta up">↑ 12%</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">订单数</div><div class="value">86</div><div class="delta up">↑ 5%</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">转化率</div><div class="value">6.7%</div><div class="delta down">↓ 0.8pt</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">销售额</div><div class="value">¥43,200</div><div class="delta up">↑ 18%</div>
+    </div>
+  </section>
+
+  <section class="card chart-card">
+    <h3>近 7 日访客数（人）</h3>
+    <div class="note">鼠标放到柱子上可看当天数字</div>
+    <svg viewBox="0 0 720 300" role="img" aria-label="近7日访客数柱状图，周日最高1520人">
+      <line class="gridline" x1="48" y1="24"  x2="704" y2="24"/>
+      <line class="gridline" x1="48" y1="84"  x2="704" y2="84"/>
+      <line class="gridline" x1="48" y1="144" x2="704" y2="144"/>
+      <line class="gridline" x1="48" y1="204" x2="704" y2="204"/>
+      <line class="gridline" x1="48" y1="264" x2="704" y2="264"/>
+      <text class="axis-label" x="40" y="28"  text-anchor="end">1600</text>
+      <text class="axis-label" x="40" y="88"  text-anchor="end">1200</text>
+      <text class="axis-label" x="40" y="148" text-anchor="end">800</text>
+      <text class="axis-label" x="40" y="208" text-anchor="end">400</text>
+      <text class="axis-label" x="40" y="268" text-anchor="end">0</text>
+
+      <g class="bar-group">
+        <rect class="bar-hit" x="71" y="24" width="48" height="240"/>
+        <rect class="bar" x="71" y="141" width="48" height="123" rx="4"/>
+        <g class="tip"><rect x="52" y="105" width="86" height="26" rx="6"/><text x="95" y="123" text-anchor="middle">周一 820人</text></g>
+        <text class="axis-label" x="95" y="284" text-anchor="middle">周一</text>
+      </g>
+      <g class="bar-group">
+        <rect class="bar-hit" x="165" y="24" width="48" height="240"/>
+        <rect class="bar" x="165" y="124" width="48" height="140" rx="4"/>
+        <g class="tip"><rect x="146" y="88" width="86" height="26" rx="6"/><text x="189" y="106" text-anchor="middle">周二 932人</text></g>
+        <text class="axis-label" x="189" y="284" text-anchor="middle">周二</text>
+      </g>
+      <g class="bar-group">
+        <rect class="bar-hit" x="258" y="24" width="48" height="240"/>
+        <rect class="bar" x="258" y="129" width="48" height="135" rx="4"/>
+        <g class="tip"><rect x="239" y="93" width="86" height="26" rx="6"/><text x="282" y="111" text-anchor="middle">周三 901人</text></g>
+        <text class="axis-label" x="282" y="284" text-anchor="middle">周三</text>
+      </g>
+      <g class="bar-group">
+        <rect class="bar-hit" x="352" y="24" width="48" height="240"/>
+        <rect class="bar" x="352" y="94" width="48" height="170" rx="4"/>
+        <g class="tip"><rect x="333" y="58" width="86" height="26" rx="6"/><text x="376" y="76" text-anchor="middle">周四 1134人</text></g>
+        <text class="axis-label" x="376" y="284" text-anchor="middle">周四</text>
+      </g>
+      <g class="bar-group">
+        <rect class="bar-hit" x="446" y="24" width="48" height="240"/>
+        <rect class="bar" x="446" y="71" width="48" height="193" rx="4"/>
+        <g class="tip"><rect x="427" y="35" width="86" height="26" rx="6"/><text x="470" y="53" text-anchor="middle">周五 1290人</text></g>
+        <text class="axis-label" x="470" y="284" text-anchor="middle">周五</text>
+      </g>
+      <g class="bar-group">
+        <rect class="bar-hit" x="540" y="24" width="48" height="240"/>
+        <rect class="bar" x="540" y="65" width="48" height="199" rx="4"/>
+        <g class="tip"><rect x="521" y="29" width="86" height="26" rx="6"/><text x="564" y="47" text-anchor="middle">周六 1330人</text></g>
+        <text class="axis-label" x="564" y="284" text-anchor="middle">周六</text>
+      </g>
+      <g class="bar-group">
+        <rect class="bar-hit" x="633" y="24" width="48" height="240"/>
+        <rect class="bar" x="633" y="36" width="48" height="228" rx="4"/>
+        <g class="tip"><rect x="614" y="0" width="86" height="26" rx="6"/><text x="657" y="18" text-anchor="middle">周日 1520人</text></g>
+        <text class="direct-label" x="657" y="30" text-anchor="middle">1520</text>
+        <text class="axis-label" x="657" y="284" text-anchor="middle">周日</text>
+      </g>
+    </svg>
+  </section>
+
+  <h2 class="section">📝 备忘小工具</h2>
+  <section class="card memo">
+    <h3>我的备忘清单</h3>
+    <p class="sub">点文字可标记完成，点 × 删除；数据自动保存在本浏览器</p>
+    <div class="add-row">
+      <input type="text" id="todoInput" placeholder="写一条要记的事，回车添加" autocomplete="off">
+      <button id="addBtn">添加</button>
+    </div>
+    <ul class="todos" id="todoList"></ul>
+    <p class="empty" id="emptyTip">还没有备忘，写一条试试吧</p>
+  </section>
+
+</div>
+
+<script>
+  // ===== 登录闭环：没有登录态立刻踢回登录页 =====
+  var user = localStorage.getItem('workbench_user');
+  if (!user) {
+    window.location.href = 'login.html';
+  }
+  document.getElementById('who').textContent = user;
+
+  document.getElementById('logout').addEventListener('click', function () {
+    localStorage.removeItem('workbench_user');
+    window.location.href = 'login.html';
+  });
+
+  // ===== 备忘小工具：增、删、勾选，全部存 localStorage =====
+  var KEY = 'workbench_todos';
+  var listEl = document.getElementById('todoList');
+  var emptyEl = document.getElementById('emptyTip');
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function save(todos) {
+    localStorage.setItem(KEY, JSON.stringify(todos));
+  }
+  function render() {
+    var todos = load();
+    listEl.innerHTML = '';
+    todos.forEach(function (t) {
+      var li = document.createElement('li');
+      if (t.done) li.className = 'done';
+
+      var span = document.createElement('span');
+      span.className = 'text';
+      span.textContent = t.text;
+      span.addEventListener('click', function () { toggle(t.id); });
+
+      var del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '×';
+      del.title = '删除';
+      del.addEventListener('click', function () { remove(t.id); });
+
+      li.appendChild(span);
+      li.appendChild(del);
+      listEl.appendChild(li);
+    });
+    emptyEl.style.display = todos.length ? 'none' : 'block';
+  }
+  function add() {
+    var input = document.getElementById('todoInput');
+    var text = input.value.trim();
+    if (!text) return;
+    var todos = load();
+    todos.push({ id: Date.now() + '-' + todos.length, text: text, done: false });
+    save(todos);
+    input.value = '';
+    render();
+  }
+  function toggle(id) {
+    var todos = load();
+    todos.forEach(function (t) { if (t.id === id) t.done = !t.done; });
+    save(todos);
+    render();
+  }
+  function remove(id) {
+    var todos = load().filter(function (t) { return t.id !== id; });
+    save(todos);
+    render();
+  }
+
+  document.getElementById('addBtn').addEventListener('click', add);
+  document.getElementById('todoInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') add();
+  });
+
+  render();
+</script>
+</body>
+</html>

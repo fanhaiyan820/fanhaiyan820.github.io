@@ -3,222 +3,112 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>练手看板 · 我的第一个网站</title>
+<title>范姐的个人工作台 · 首页</title>
 <style>
-  /* 颜色按"角色"定义，想换色只改这一处 */
   :root {
     color-scheme: light;
-    --page:        #f9f9f7;   /* 页面底色 */
-    --surface:     #fcfcfb;   /* 卡片底色 */
-    --ink:         #0b0b0b;   /* 主文字 */
-    --ink-2:       #52514e;   /* 次要文字 */
-    --muted:       #898781;   /* 轴标签 */
-    --grid:        #e1e0d9;   /* 网格线 */
-    --border:      rgba(11,11,11,0.10);
-    --series-1:    #2a78d6;   /* 柱子：蓝 */
-    --up:          #006300;   /* 上涨：绿 */
-    --down:        #d03b3b;   /* 下降：红 */
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e;
+    --muted: #898781; --border: rgba(11,11,11,0.10);
+    --brand: #2a78d6; --brand-dark: #1c5cab;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       color-scheme: dark;
-      --page:        #0d0d0d;
-      --surface:     #1a1a19;
-      --ink:         #ffffff;
-      --ink-2:       #c3c2b7;
-      --muted:       #898781;
-      --grid:        #2c2c2a;
-      --border:      rgba(255,255,255,0.10);
-      --series-1:    #3987e5;
-      --up:          #0ca30c;
-      --down:        #e66767;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+      --muted: #898781; --border: rgba(255,255,255,0.10);
+      --brand: #3987e5; --brand-dark: #5598e7;
     }
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--page);
-    color: var(--ink);
+    background: var(--page); color: var(--ink);
     font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
-    line-height: 1.5;
-    padding: 32px 20px;
+    line-height: 1.6;
   }
-  .wrap { max-width: 900px; margin: 0 auto; }
-
-  header { margin-bottom: 24px; }
-  header h1 { font-size: 24px; font-weight: 700; }
-  header p  { color: var(--ink-2); font-size: 14px; margin-top: 4px; }
-
-  /* KPI 卡片 */
-  .kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px;
-    margin-bottom: 16px;
+  .nav {
+    max-width: 900px; margin: 0 auto; padding: 18px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .nav .logo { font-weight: 700; }
+  .nav a { color: var(--brand); text-decoration: none; font-size: 14px; }
+  .hero { max-width: 900px; margin: 0 auto; padding: 70px 20px 30px; text-align: center; }
+  .hero .badge {
+    display: inline-block; font-size: 13px; color: var(--brand);
+    border: 1px solid var(--brand); border-radius: 999px; padding: 2px 14px; margin-bottom: 18px;
+  }
+  .hero h1 { font-size: 38px; font-weight: 800; letter-spacing: 1px; }
+  .hero p { color: var(--ink-2); margin-top: 14px; font-size: 16px; }
+  .btn {
+    display: inline-block; margin-top: 28px; background: var(--brand); color: #fff;
+    text-decoration: none; font-size: 16px; font-weight: 600;
+    padding: 12px 38px; border-radius: 10px; border: none; cursor: pointer;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .features {
+    max-width: 900px; margin: 30px auto 0; padding: 0 20px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;
   }
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 18px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 22px;
   }
-  .kpi .label { font-size: 13px; color: var(--ink-2); }
-  .kpi .value { font-size: 28px; font-weight: 700; margin-top: 6px; }
-  .kpi .delta { font-size: 13px; margin-top: 4px; }
-  .kpi .delta.up   { color: var(--up); }
-  .kpi .delta.down { color: var(--down); }
-
-  /* 图表卡片 */
-  .chart-card { padding: 20px 22px 12px; }
-  .chart-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-  .chart-card .note { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-  svg { width: 100%; height: auto; display: block; }
-
-  .gridline { stroke: var(--grid); stroke-width: 1; }
-  .axis-label { fill: var(--muted); font-size: 12px; }
-  .bar { fill: var(--series-1); }
-  .bar-hit { fill: transparent; cursor: pointer; }
-  .bar-hit:hover + .bar { opacity: 0.85; }
-
-  /* 悬浮提示框 */
-  .tip { opacity: 0; pointer-events: none; transition: opacity .1s; }
-  .tip rect { fill: var(--ink); }
-  .tip text { fill: var(--surface); font-size: 12px; }
-  .bar-group:hover .tip { opacity: 1; }
-  .direct-label { fill: var(--ink-2); font-size: 12px; }
-
-  /* 数据表（给看不到图的人 / 想核对数字的人） */
-  details { margin-top: 12px; font-size: 13px; }
-  summary { cursor: pointer; color: var(--ink-2); }
-  table { border-collapse: collapse; margin-top: 8px; }
-  th, td { border: 1px solid var(--border); padding: 4px 14px; text-align: right; }
-  th:first-child, td:first-child { text-align: left; }
-
-  footer { margin-top: 20px; font-size: 12px; color: var(--muted); text-align: center; }
+  .card .icon { font-size: 26px; }
+  .card h3 { font-size: 16px; margin: 8px 0 4px; }
+  .card p { font-size: 13px; color: var(--ink-2); }
+  .flow { max-width: 900px; margin: 36px auto 0; padding: 0 20px 60px; text-align: center; }
+  .flow h2 { font-size: 16px; color: var(--ink-2); margin-bottom: 14px; }
+  .flow .steps { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+  .flow .step {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 14px; font-size: 13px;
+  }
+  .flow .arrow { color: var(--muted); align-self: center; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding-bottom: 30px; }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header>
-    <h1>练手看板 · 我的第一个网站</h1>
-    <p>全部为演示假数据，仅用来练习 GitHub Pages 上线流程</p>
-  </header>
+<nav class="nav">
+  <div class="logo">🧭 范姐的个人工作台</div>
+  <a href="login.html">登录</a>
+</nav>
 
-  <!-- 4 个 KPI -->
-  <section class="kpis">
-    <div class="card kpi">
-      <div class="label">本周访客</div>
-      <div class="value">1,284</div>
-      <div class="delta up">↑ 12%</div>
-    </div>
-    <div class="card kpi">
-      <div class="label">订单数</div>
-      <div class="value">86</div>
-      <div class="delta up">↑ 5%</div>
-    </div>
-    <div class="card kpi">
-      <div class="label">转化率</div>
-      <div class="value">6.7%</div>
-      <div class="delta down">↓ 0.8pt</div>
-    </div>
-    <div class="card kpi">
-      <div class="label">销售额</div>
-      <div class="value">¥43,200</div>
-      <div class="delta up">↑ 18%</div>
-    </div>
-  </section>
+<section class="hero">
+  <span class="badge">我的第一个网站 · GitHub Pages 托管</span>
+  <h1>一个放在云上的<br>个人工作台</h1>
+  <p>登录后可以查看数据看板、随手记录备忘。<br>纯网页练习作品，数据都为演示假数据，保存在你自己的浏览器里。</p>
+  <a class="btn" href="login.html">登录进入 →</a>
+</section>
 
-  <!-- 近 7 日访客柱状图（手绘 SVG） -->
-  <section class="card chart-card">
-    <h2>近 7 日访客数（人）</h2>
-    <div class="note">鼠标放到柱子上可看当天数字</div>
+<section class="features">
+  <div class="card">
+    <div class="icon">📊</div>
+    <h3>数据看板</h3>
+    <p>4 个关键指标 + 近 7 日访客柱状图，一眼掌握整体情况。</p>
+  </div>
+  <div class="card">
+    <div class="icon">📝</div>
+    <h3>备忘小工具</h3>
+    <p>随手添加、删除待办事项，自动保存在本机浏览器，下次打开还在。</p>
+  </div>
+  <div class="card">
+    <div class="icon">🔐</div>
+    <h3>登录闭环</h3>
+    <p>未登录无法进入功能页；退出后即回到登录页，走通完整访问链路。</p>
+  </div>
+</section>
 
-    <svg viewBox="0 0 720 300" role="img" aria-label="近7日访客数柱状图，周日最高1520人">
-      <!-- 网格线 + 纵轴刻度：0 / 400 / 800 / 1200 / 1600 -->
-      <line class="gridline" x1="48" y1="24"   x2="704" y2="24"/>
-      <line class="gridline" x1="48" y1="84"   x2="704" y2="84"/>
-      <line class="gridline" x1="48" y1="144"  x2="704" y2="144"/>
-      <line class="gridline" x1="48" y1="204"  x2="704" y2="204"/>
-      <line class="gridline" x1="48" y1="264"  x2="704" y2="264"/>
-      <text class="axis-label" x="40" y="28"  text-anchor="end">1600</text>
-      <text class="axis-label" x="40" y="88"  text-anchor="end">1200</text>
-      <text class="axis-label" x="40" y="148" text-anchor="end">800</text>
-      <text class="axis-label" x="40" y="208" text-anchor="end">400</text>
-      <text class="axis-label" x="40" y="268" text-anchor="end">0</text>
+<section class="flow">
+  <h2>本网站走过的完整链路</h2>
+  <div class="steps">
+    <span class="step">注册 GitHub</span><span class="arrow">→</span>
+    <span class="step">环境（Pages）</span><span class="arrow">→</span>
+    <span class="step">登录闭环</span><span class="arrow">→</span>
+    <span class="step">一个功能（看板+备忘）</span><span class="arrow">→</span>
+    <span class="step">上传上线</span>
+  </div>
+</section>
 
-      <!-- 每根柱子：透明加宽热区 + 柱子 + 悬浮提示 -->
-      <!-- 周一 820 -->
-      <g class="bar-group">
-        <rect class="bar-hit" x="71" y="24" width="48" height="240"/>
-        <rect class="bar" x="71" y="141" width="48" height="123" rx="4"/>
-        <g class="tip"><rect x="52" y="105" width="86" height="26" rx="6"/><text x="95" y="123" text-anchor="middle">周一 820人</text></g>
-        <text class="axis-label" x="95" y="284" text-anchor="middle">周一</text>
-      </g>
-      <!-- 周二 932 -->
-      <g class="bar-group">
-        <rect class="bar-hit" x="165" y="24" width="48" height="240"/>
-        <rect class="bar" x="165" y="124" width="48" height="140" rx="4"/>
-        <g class="tip"><rect x="146" y="88" width="86" height="26" rx="6"/><text x="189" y="106" text-anchor="middle">周二 932人</text></g>
-        <text class="axis-label" x="189" y="284" text-anchor="middle">周二</text>
-      </g>
-      <!-- 周三 901 -->
-      <g class="bar-group">
-        <rect class="bar-hit" x="258" y="24" width="48" height="240"/>
-        <rect class="bar" x="258" y="129" width="48" height="135" rx="4"/>
-        <g class="tip"><rect x="239" y="93" width="86" height="26" rx="6"/><text x="282" y="111" text-anchor="middle">周三 901人</text></g>
-        <text class="axis-label" x="282" y="284" text-anchor="middle">周三</text>
-      </g>
-      <!-- 周四 1134 -->
-      <g class="bar-group">
-        <rect class="bar-hit" x="352" y="24" width="48" height="240"/>
-        <rect class="bar" x="352" y="94" width="48" height="170" rx="4"/>
-        <g class="tip"><rect x="333" y="58" width="86" height="26" rx="6"/><text x="376" y="76" text-anchor="middle">周四 1134人</text></g>
-        <text class="axis-label" x="376" y="284" text-anchor="middle">周四</text>
-      </g>
-      <!-- 周五 1290 -->
-      <g class="bar-group">
-        <rect class="bar-hit" x="446" y="24" width="48" height="240"/>
-        <rect class="bar" x="446" y="71" width="48" height="193" rx="4"/>
-        <g class="tip"><rect x="427" y="35" width="86" height="26" rx="6"/><text x="470" y="53" text-anchor="middle">周五 1290人</text></g>
-        <text class="axis-label" x="470" y="284" text-anchor="middle">周五</text>
-      </g>
-      <!-- 周六 1330 -->
-      <g class="bar-group">
-        <rect class="bar-hit" x="540" y="24" width="48" height="240"/>
-        <rect class="bar" x="540" y="65" width="48" height="199" rx="4"/>
-        <g class="tip"><rect x="521" y="29" width="86" height="26" rx="6"/><text x="564" y="47" text-anchor="middle">周六 1330人</text></g>
-        <text class="axis-label" x="564" y="284" text-anchor="middle">周六</text>
-      </g>
-      <!-- 周日 1520（最高，直接标出数字） -->
-      <g class="bar-group">
-        <rect class="bar-hit" x="633" y="24" width="48" height="240"/>
-        <rect class="bar" x="633" y="36" width="48" height="228" rx="4"/>
-        <g class="tip"><rect x="614" y="0" width="86" height="26" rx="6"/><text x="657" y="18" text-anchor="middle">周日 1520人</text></g>
-        <text class="direct-label" x="657" y="30" text-anchor="middle">1520</text>
-        <text class="axis-label" x="657" y="284" text-anchor="middle">周日</text>
-      </g>
-    </svg>
-
-    <!-- 数据表：图表的文字版，方便核对 -->
-    <details>
-      <summary>查看数据表</summary>
-      <table>
-        <thead><tr><th>日期</th><th>访客数（人）</th></tr></thead>
-        <tbody>
-          <tr><td>周一</td><td>820</td></tr>
-          <tr><td>周二</td><td>932</td></tr>
-          <tr><td>周三</td><td>901</td></tr>
-          <tr><td>周四</td><td>1134</td></tr>
-          <tr><td>周五</td><td>1290</td></tr>
-          <tr><td>周六</td><td>1330</td></tr>
-          <tr><td>周日</td><td>1520</td></tr>
-        </tbody>
-      </table>
-    </details>
-  </section>
-
-  <footer>晏策陪范姐做的第一个练手页面 · 2026-09-27</footer>
-</div>
+<footer>2026-09-27 · 网站制作课程作业</footer>
 </body>
 </html>
